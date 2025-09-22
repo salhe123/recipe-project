@@ -31,7 +31,7 @@
 </svelte:head>
 
 <!-- Hero Section -->
-<section class="relative py-20 lg:py-32 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+<section class="relative min-h-screen flex items-center justify-center py-20 lg:py-32 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
   <div class="container px-4">
     <div class="max-w-4xl mx-auto text-center space-y-8">
       <h1 class="text-4xl lg:text-6xl font-bold text-balance">
@@ -68,8 +68,9 @@
   </div>
 </section>
 
+
 <!-- Featured Recipes -->
-<section class="py-16 lg:py-24">
+<section class="min-h-screen flex items-center justify-center py-16 lg:py-24">
   <div class="container px-4">
     <div class="text-center space-y-4 mb-12">
       <h2 class="text-3xl lg:text-4xl font-bold">Featured Recipes</h2>
@@ -166,25 +167,26 @@
   </div>
 </section>
 
+
 <!-- Recent Recipes -->
-<section class="py-16 lg:py-24 bg-muted/50">
+<section class="min-h-screen flex items-center justify-center py-16 lg:py-24 bg-muted/50">
   <div class="container px-4">
-    <div class="flex items-center justify-between mb-12">
-      <div class="space-y-2">
-        <h2 class="text-3xl lg:text-4xl font-bold">Recent Recipes</h2>
-        <p class="text-muted-foreground text-lg">Fresh recipes from our community</p>
-      </div>
+    <!-- Heading -->
+    <div class="text-center space-y-4 mb-12">
+      <h2 class="text-3xl lg:text-4xl font-bold">Recent Recipes</h2>
+      <p class="text-muted-foreground text-lg">Fresh recipes from our community</p>
       <a 
         href="/recipes"
-        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4"
+        class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors h-10 px-6 mt-4"
       >
         View All Recipes
       </a>
     </div>
     
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Recipes Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {#each $recentRecipes as recipe (recipe.id)}
-        <div class="group relative overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="group relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200">
           <div class="aspect-[16/10] overflow-hidden">
             <img 
               src={recipe.images[0] || "/placeholder.svg"} 
@@ -193,24 +195,26 @@
             />
           </div>
           
-          <div class="p-4 space-y-3">
+          <!-- Content -->
+          <div class="p-6 space-y-4">
             <div class="space-y-1">
-              <h3 class="font-semibold line-clamp-1">{recipe.title}</h3>
+              <h3 class="font-semibold text-lg line-clamp-1">{recipe.title}</h3>
               <p class="text-sm text-muted-foreground line-clamp-2">{recipe.description}</p>
             </div>
             
+            <!-- Meta -->
             <div class="flex items-center justify-between text-xs text-muted-foreground">
               <div class="flex items-center gap-2">
                 <img 
                   src={recipe.authorAvatar || "/placeholder.svg"} 
                   alt={recipe.authorName}
-                  class="h-4 w-4 rounded-full"
+                  class="h-6 w-6 rounded-full"
                 />
                 <span>{recipe.authorName}</span>
               </div>
               <div class="flex items-center gap-3">
                 <div class="flex items-center gap-1">
-                  <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   <span>{recipe.rating.toFixed(1)}</span>
@@ -219,9 +223,10 @@
               </div>
             </div>
             
+            <!-- Button -->
             <a 
               href="/recipes/{recipe.id}"
-              class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-full"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors h-9 w-full"
             >
               View Recipe
             </a>
@@ -232,30 +237,34 @@
   </div>
 </section>
 
+
 <!-- Call to Action -->
 {#if !$currentUser}
-  <section class="py-16 lg:py-24">
-    <div class="container px-4">
-      <div class="max-w-2xl mx-auto text-center space-y-6">
-        <h2 class="text-3xl lg:text-4xl font-bold">Join Our Community</h2>
-        <p class="text-muted-foreground text-lg">
-          Start sharing your favorite recipes and discover new ones from fellow food enthusiasts around the world.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a 
-            href="/signup"
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8"
-          >
-            Sign Up Free
-          </a>
-          <a 
-            href="/login"
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-11 px-8"
-          >
-            Already have an account?
-          </a>
-        </div>
+  <section class="min-h-screen flex items-center justify-center mt-0.5 bg-gray-50 dark:bg-gray-900">
+  <div class="container px-4">
+    <div class="max-w-2xl mx-auto text-center space-y-6">
+      <h2 class="text-3xl lg:text-4xl font-bold tracking-tight">
+        Join Our Community
+      </h2>
+      <p class="text-lg text-muted-foreground">
+        Start sharing your favorite recipes and discover new ones from fellow food enthusiasts around the world.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a 
+          href="/signup"
+          class="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 text-sm font-medium transition-colors"
+        >
+          Sign Up Free
+        </a>
+        <a 
+          href="/login"
+          class="inline-flex items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground h-11 px-8 text-sm font-medium transition-colors"
+        >
+          Already have an account?
+        </a>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+
 {/if}

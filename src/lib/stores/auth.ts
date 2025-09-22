@@ -35,7 +35,6 @@ function createAuthStore() {
   return {
     subscribe,
     login: async (email: string, password: string) => {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       const user = dummyUsers.find((u) => u.email === email)
@@ -46,7 +45,6 @@ function createAuthStore() {
       return { success: false, error: "Invalid credentials" }
     },
     signup: async (email: string, password: string, name: string) => {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       const newUser: User = {
