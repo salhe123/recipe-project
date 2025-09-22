@@ -8,8 +8,8 @@ export interface Recipe {
   steps: string[]
   images: string[]
   tags: string[]
-  prepTime: number // in minutes
-  cookTime: number // in minutes
+  prepTime: number 
+  cookTime: number 
   servings: number
   difficulty: "easy" | "medium" | "hard"
   authorId: string
