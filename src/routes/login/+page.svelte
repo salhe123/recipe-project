@@ -1,35 +1,51 @@
 <script lang="ts">
-  import { auth } from "$lib/stores/auth";
-  import { goto } from "$app/navigation";
+  import { goto } from '$app/navigation';
+  import { auth } from '$lib/stores/auth';
+  import { validateEmail, validatePassword } from '$lib/utils';
+  import { toast } from 'svelte-sonner';
 
-  let email = $state("");
-  let password = $state("");
+  let email = $state('');
+  let password = $state('');
   let isLoading = $state(false);
-  let error = $state("");
-
+  let error = $state('');
   let showPassword = $state(false);
 
   async function handleLogin(event: Event) {
     event.preventDefault();
 
     if (!email || !password) {
-      error = "Please fill in all fields";
+      error = 'Please fill in all fields';
+      toast.error(error);
+      return;
+    }
+
+    if (validateEmail(email)) {
+      error = validateEmail(email)!;
+      toast.error(error);
+      return;
+    }
+    if (validatePassword(password)) {
+      error = validatePassword(password)!;
+      toast.error(error);
       return;
     }
 
     isLoading = true;
-    error = "";
+    error = '';
 
     try {
       const result = await auth.login(email, password);
-
       if (result.success) {
-        goto("/");
+        toast.success('Login successful!');
+        await auth.checkAuth(); // Ensure user state is updated
+        goto('/');
       } else {
-        error = result.error || "Login failed";
+        error = result.error || 'Login failed';
+        toast.error(error);
       }
     } catch (err) {
-      error = "An unexpected error occurred";
+      error = 'An unexpected error occurred';
+      toast.error(error);
     } finally {
       isLoading = false;
     }
@@ -79,23 +95,21 @@
           >
             Password
           </label>
-
           <div class="relative">
             <input
               id="password"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               bind:value={password}
               required
               class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="password"
             />
-
             <button
               type="button"
               onclick={() => (showPassword = !showPassword)}
               class="absolute inset-y-0 right-2 flex items-center justify-center px-2 hover:cursor-pointer"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              title={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              title={showPassword ? 'Hide password' : 'Show password'}
             >
               {#if showPassword}
                 <svg

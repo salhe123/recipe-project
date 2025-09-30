@@ -4,16 +4,28 @@
   import { auth } from "$lib/stores/auth";
   import { theme } from "$lib/stores/theme";
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { toast } from 'svelte-sonner';
+
+  interface User {
+    userID: string;
+    email: string;
+    username: string;
+    avatar?: string;
+    role: 'user' | 'admin';
+    createdAt?: Date;
+    exp?: number;
+  }
+
   interface Props {
     children?: import("svelte").Snippet;
   }
 
   let { children }: Props = $props();
 
-  let currentUser = $state(null);
+  let currentUser: User | null = $state(null);
   let currentTheme = $state("light");
 
-  // Subscribe to stores
   $effect(() => {
     const unsubscribeAuth = auth.subscribe((user) => {
       currentUser = user;
@@ -32,10 +44,10 @@
     };
   });
 
-  onMount(() => {
-    // Initialize theme from localStorage
+  onMount(async () => {
     const savedTheme = localStorage.getItem("theme") || "light";
     theme.set(savedTheme as "light" | "dark");
+    await auth.checkAuth();
   });
 
   function toggleTheme() {
@@ -45,7 +57,11 @@
 
   function handleLogout() {
     auth.logout();
+    toast.success('Logged out successfully!');
+    goto("/login");
   }
+
+  let isAuthPage = $derived($page.url.pathname === '/login' || $page.url.pathname === '/signup');
 </script>
 
 <div class="min-h-screen bg-background text-foreground">
@@ -53,7 +69,6 @@
     class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
   >
     <div class="container flex h-16 items-center px-4">
-      <!-- Left side -->
       <div class="flex items-center gap-6">
         <a href="/" class="flex items-center gap-2">
           <div
@@ -67,33 +82,33 @@
         <nav class="hidden md:flex items-center gap-6">
           <a
             href="/"
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 {$page.url.pathname === '/' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'hover:text-primary'} h-9 px-3"
           >
             Home
           </a>
           <a
             href="/recipes"
-            class="text-sm hover:underline font-medium hover:text-primary transition-colors"
+            class="text-sm font-medium transition-colors {$page.url.pathname === '/recipes' ? 'text-primary font-bold' : 'hover:text-primary'}"
           >
             Recipes
           </a>
-          {#if currentUser}
+          {#if currentUser && !isAuthPage}
             <a
               href="/create"
-              class="text-sm font-medium hover:text-primary transition-colors"
+              class="text-sm font-medium transition-colors {$page.url.pathname === '/create' ? 'text-primary font-bold' : 'hover:text-primary'}"
             >
               Create Recipe
             </a>
             <a
               href="/profile"
-              class="text-sm font-medium hover:text-primary transition-colors"
+              class="text-sm font-medium transition-colors {$page.url.pathname === '/profile' ? 'text-primary font-bold' : 'hover:text-primary'}"
             >
               My Profile
             </a>
-            {#if currentUser.role === "admin"}
+            {#if currentUser?.role === "admin"}
               <a
                 href="/admin"
-                class="text-sm font-medium hover:text-primary transition-colors"
+                class="text-sm font-medium transition-colors {$page.url.pathname === '/admin' ? 'text-primary font-bold' : 'hover:text-primary'}"
               >
                 Admin
               </a>
@@ -102,9 +117,7 @@
         </nav>
       </div>
 
-      <!-- Right side -->
       <div class="flex items-center gap-4 ml-auto">
-        <!-- Theme Toggle -->
         <button
           onclick={toggleTheme}
           class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
@@ -140,15 +153,15 @@
           {/if}
         </button>
 
-        {#if currentUser}
+        {#if currentUser && !isAuthPage}
           <div class="flex items-center gap-3">
             <img
               src={currentUser.avatar || "/placeholder.svg"}
-              alt={currentUser.name}
+              alt={currentUser.username || 'User'}
               class="h-8 w-8 rounded-full"
             />
             <span class="text-sm font-medium hidden sm:block"
-              >{currentUser.name}</span
+              >{currentUser.username || 'User'}</span
             >
             <button
               onclick={handleLogout}
@@ -157,17 +170,17 @@
               Logout
             </button>
           </div>
-        {:else}
+        {:else if !isAuthPage}
           <div class="flex items-center gap-2">
             <a
               href="/login"
-              class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 {$page.url.pathname === '/login' ? 'bg-accent text-accent-foreground' : ''}"
             >
               Login
             </a>
             <a
               href="/signup"
-              class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 {$page.url.pathname === '/signup' ? 'bg-primary/90' : ''}"
             >
               Sign Up
             </a>
@@ -176,65 +189,51 @@
       </div>
     </div>
   </header>
-  <!-- Main Content -->
   <main class="flex-1">
     {@render children?.()}
   </main>
-
-  <!-- Footer -->
   <footer class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
-  <div class="container mx-auto px-4 py-12 flex flex-col items-center space-y-12">
-    <!-- Top Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full text-center md:text-left">
-      <!-- Brand -->
-      <div class="space-y-3 flex flex-col items-center md:items-start">
-        <div class="flex items-center gap-2">
-          <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span class="text-primary-foreground font-bold text-lg">R</span>
+    <div class="container mx-auto px-4 py-12 flex flex-col items-center space-y-12">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full text-center md:text-left">
+        <div class="space-y-3 flex flex-col items-center md:items-start">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <span class="text-primary-foreground font-bold text-lg">R</span>
+            </div>
+            <span class="font-bold text-lg">RecipeShare</span>
           </div>
-          <span class="font-bold text-lg">RecipeShare</span>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Share and discover amazing recipes from around the world.
+          </p>
         </div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          Share and discover amazing recipes from around the world.
-        </p>
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Recipes</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/recipes?tag=breakfast" class="hover:text-primary transition-colors">Breakfast</a></li>
+            <li><a href="/recipes?tag=lunch" class="hover:text-primary transition-colors">Lunch</a></li>
+            <li><a href="/recipes?tag=dinner" class="hover:text-primary transition-colors">Dinner</a></li>
+            <li><a href="/recipes?tag=dessert" class="hover:text-primary transition-colors">Desserts</a></li>
+          </ul>
+        </div>
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Community</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/about" class="hover:text-primary transition-colors">About</a></li>
+            <li><a href="/contact" class="hover:text-primary transition-colors">Contact</a></li>
+            <li><a href="/help" class="hover:text-primary transition-colors">Help</a></li>
+          </ul>
+        </div>
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Legal</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/privacy" class="hover:text-primary transition-colors">Privacy Policy</a></li>
+            <li><a href="/terms" class="hover:text-primary transition-colors">Terms of Service</a></li>
+          </ul>
+        </div>
       </div>
-
-      <!-- Recipes Links -->
-      <div class="space-y-3">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Recipes</h4>
-        <ul class="space-y-2 text-sm">
-          <li><a href="/recipes?tag=breakfast" class="hover:text-primary transition-colors">Breakfast</a></li>
-          <li><a href="/recipes?tag=lunch" class="hover:text-primary transition-colors">Lunch</a></li>
-          <li><a href="/recipes?tag=dinner" class="hover:text-primary transition-colors">Dinner</a></li>
-          <li><a href="/recipes?tag=dessert" class="hover:text-primary transition-colors">Desserts</a></li>
-        </ul>
-      </div>
-
-      <!-- Community Links -->
-      <div class="space-y-3">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Community</h4>
-        <ul class="space-y-2 text-sm">
-          <li><a href="/about" class="hover:text-primary transition-colors">About</a></li>
-          <li><a href="/contact" class="hover:text-primary transition-colors">Contact</a></li>
-          <li><a href="/help" class="hover:text-primary transition-colors">Help</a></li>
-        </ul>
-      </div>
-
-      <!-- Legal Links -->
-      <div class="space-y-3">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Legal</h4>
-        <ul class="space-y-2 text-sm">
-          <li><a href="/privacy" class="hover:text-primary transition-colors">Privacy Policy</a></li>
-          <li><a href="/terms" class="hover:text-primary transition-colors">Terms of Service</a></li>
-        </ul>
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-6 w-full text-center text-sm text-gray-500 dark:text-gray-400">
+        <p>&copy; 2025 RecipeShare. All rights reserved.</p>
       </div>
     </div>
-
-    <!-- Bottom Bar -->
-    <div class="border-t border-gray-200 dark:border-gray-700 pt-6 w-full text-center text-sm text-gray-500 dark:text-gray-400">
-      <p>&copy; 2024 RecipeShare. All rights reserved.</p>
-    </div>
-  </div>
-</footer>
-
+  </footer>
 </div>
